@@ -1,0 +1,73 @@
+import re
+import urllib2
+import string
+import sqlite3
+
+class Google_Blacklist(object):
+    """
+    Google Blacklist class that is used to fetch and prepare hashes to be
+    stored in the database.
+    """
+    def __init__(self,key,url,dbname="",badware_type="malware"):
+        """
+        The constructor initializes the module.
+        """
+        badware_dict = {"M":"malware","B":"black"}
+        try:
+            self.key = key
+            self.dbname = dbname
+            self.url = url
+            self.badware_type = badware_dict[badware_type]
+            assert self.key
+            assert self.dbname
+            assert self.url
+            assert self.badware_type
+        except AssertionError:
+            raise AssertionError("Key/Dbname/URL is/are missing.")            
+
+    def fetch_data(self):
+            try:
+                conn = sqlite3.connect(self.dbname)
+                cur = conn.cursor()
+                cur.execute("select * from %s_version;" %(self.badware_type))
+                row = cur.fetchall()
+                s = string.Template(self.url)
+                try:
+                    assert row
+                    self.version_number = row[0][0]
+                    self.final_url = s.safe_substitute(key = self.key,\
+                                                       badware_type = self.badware_type,\
+                                                       version = self.version_number)
+                    self.fetch_url_pointer = urllib2.urlopen(self.final_url)
+                    self.url_hashes_data = self.fetch_url_pointer.readlines()
+                    if self.url_hashes_data == []:
+                        return 0
+                    for url_hash in self.url_hashes_data[1:-1]:
+                        if re.match("^-\w+", url_hash):
+                            cur.execute("delete from url_hashes_table where badware_type='%s' and url_hash='%s';" %(self.badware_type, url_hash[1:].strip()))
+                            del self.url_hashes_data[self.url_hashes_data.index(url_hash)]
+                    new_version_number = ":".join(re.compile("\d\.\d+").search(self.url_hashes_data[0]).group().split("."))
+                    cur.execute("update %s_version set version_number='%s' where version_number='%s';" %(self.badware_type, new_version_number, self.version_number))
+                    self.version_number = new_version_number
+                    for url_hash in self.url_hashes_data[1:]:
+                        if not url_hash == '\n':
+                            cur.execute("insert into url_hashes_table (badware_type,url_hash) values ('%s','%s');" %(self.badware_type, url_hash[1:].strip()))
+                except AssertionError:
+                    # Start from Version 1:-1
+                    self.version_number = "1:-1"
+                    self.final_url = s.safe_substitute(key = self.key, badware_type = self.badware_type, version = self.version_number)
+                    self.fetch_url_pointer = urllib2.urlopen(self.final_url)
+                    self.url_hashes_data = self.fetch_url_pointer.readlines()
+                    new_version_number = ":".join(re.compile("\d\.\d+").search(self.url_hashes_data[0]).group().split("."))
+                    self.version_number = new_version_number                   
+                    cur.execute("insert into %s_version (version_number) values ('%s');" %(self.badware_type, self.version_number))
+                    for url_hash in self.url_hashes_data[1:]:
+                        if not url_hash == '\n':
+                            cur.execute("insert into url_hashes_table (badware_type,url_hash) values ('%s','%s');" %(self.badware_type, url_hash[1:].strip()))
+                cur.close()
+                conn.commit()
+                conn.close()
+                return 0
+            except sqlite3.DatabaseError:
+                raise sqlite3.DatabaseError("Error in a Database Specific Operation.")
+                                                            
