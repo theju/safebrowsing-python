@@ -8,7 +8,7 @@ class Google_Blacklist(object):
     Google Blacklist class that is used to fetch and prepare hashes to be
     stored in the database.
     """
-    def __init__(self,key,url,dbname="",badware_type="malware"):
+    def __init__(self,key,url,dbname="",badware_type="M"):
         """
         The constructor initializes the module.
         """
