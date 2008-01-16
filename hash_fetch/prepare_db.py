@@ -8,16 +8,20 @@ class Google_Blacklist(object):
     Google Blacklist class that is used to fetch and prepare hashes to be
     stored in the database.
     """
-    def __init__(self,key,url,dbname="",badware_type="M"):
+    def __init__(self,key,url,dbname="",badware_type="malware"):
         """
         The constructor initializes the module.
         """
-        badware_dict = {"M":"malware","B":"black"}
+        badware_dict = {"malware": "M","black": "B"}
         try:
             self.key = key
             self.dbname = dbname
             self.url = url
-            self.badware_type = badware_dict[badware_type]
+            self.badware_type = badware_type
+            try:
+                self.badware_code = badware_dict[badware_type]
+            except KeyError:
+                raise KeyError("Invalid Badware Type")
             assert self.key
             assert self.dbname
             assert self.url
@@ -44,14 +48,14 @@ class Google_Blacklist(object):
                         return 0
                     for url_hash in self.url_hashes_data[1:-1]:
                         if re.match("^-\w+", url_hash):
-                            cur.execute("delete from url_hashes_table where badware_type='%s' and url_hash='%s';" %(self.badware_type, url_hash[1:].strip()))
+                            cur.execute("delete from url_hashes_table where badware_type='%s' and url_hash='%s';" %(self.badware_code, url_hash[1:].strip()))
                             del self.url_hashes_data[self.url_hashes_data.index(url_hash)]
                     new_version_number = ":".join(re.compile("\d\.\d+").search(self.url_hashes_data[0]).group().split("."))
                     cur.execute("update %s_version set version_number='%s' where version_number='%s';" %(self.badware_type, new_version_number, self.version_number))
                     self.version_number = new_version_number
                     for url_hash in self.url_hashes_data[1:]:
                         if not url_hash == '\n':
-                            cur.execute("insert into url_hashes_table (badware_type,url_hash) values ('%s','%s');" %(self.badware_type, url_hash[1:].strip()))
+                            cur.execute("insert into url_hashes_table (badware_type,url_hash) values ('%s','%s');" %(self.badware_code, url_hash[1:].strip()))
                 except AssertionError:
                     # Start from Version 1:-1
                     self.version_number = "1:-1"
@@ -63,7 +67,7 @@ class Google_Blacklist(object):
                     cur.execute("insert into %s_version (version_number) values ('%s');" %(self.badware_type, self.version_number))
                     for url_hash in self.url_hashes_data[1:]:
                         if not url_hash == '\n':
-                            cur.execute("insert into url_hashes_table (badware_type,url_hash) values ('%s','%s');" %(self.badware_type, url_hash[1:].strip()))
+                            cur.execute("insert into url_hashes_table (badware_type,url_hash) values ('%s','%s');" %(self.badware_code, url_hash[1:].strip()))
                 cur.close()
                 conn.commit()
                 conn.close()

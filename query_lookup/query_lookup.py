@@ -78,7 +78,7 @@ class Lookup(object):
                     # database and stop operation by returning 1
                     cur.close()
                     conn.close()
-                    if row[0][0] == "malware":
+                    if row[0][0] == "M":
                         return "M"
                     
                     else:
@@ -106,7 +106,7 @@ class Lookup(object):
                 assert row
                 cur.close()
                 conn.close()
-                if row[0][0] == "malware":
+                if row[0][0] == "M":
                     return "M"
                 else:
                     return "B"                   
