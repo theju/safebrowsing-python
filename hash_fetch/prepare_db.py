@@ -62,6 +62,11 @@ class Google_Blacklist(object):
                     self.final_url = s.safe_substitute(key = self.key, badware_type = self.badware_type, version = self.version_number)
                     self.fetch_url_pointer = urllib2.urlopen(self.final_url)
                     self.url_hashes_data = self.fetch_url_pointer.readlines()
+                    if self.url_hashes_data == []:
+                        # No data, so no point checking version 
+                        # number. This case might be because of
+                        # throttling or no updates available.
+                        return 0
                     new_version_number = ":".join(re.compile("\d\.\d+").search(self.url_hashes_data[0]).group().split("."))
                     self.version_number = new_version_number                   
                     cur.execute("insert into %s_version (version_number) values ('%s');" %(self.badware_type, self.version_number))
