@@ -2,7 +2,10 @@
 
 import re
 import sqlite3
-from hashlib import md5
+try:
+    from hashlib import md5
+except ImportError:
+    import md5
 
 url_re = re.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?")
 
