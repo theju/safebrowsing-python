@@ -1,7 +1,10 @@
 import re
 import urllib2
 import string
-import sqlite3
+try:
+    import sqlite3 as sqlite
+except ImportError:
+    from pysqlite2 import dbapi2 as sqlite
 
 class Google_Blacklist(object):
     """
@@ -31,7 +34,7 @@ class Google_Blacklist(object):
 
     def fetch_data(self):
             try:
-                conn = sqlite3.connect(self.dbname)
+                conn = sqlite.connect(self.dbname)
                 cur = conn.cursor()
                 cur.execute("select * from %s_version;" %(self.badware_type))
                 row = cur.fetchall()
@@ -77,6 +80,6 @@ class Google_Blacklist(object):
                 conn.commit()
                 conn.close()
                 return 0
-            except sqlite3.DatabaseError:
-                raise sqlite3.DatabaseError("Error in a Database Specific Operation.")
+            except sqlite.DatabaseError:
+                raise sqlite.DatabaseError("Error in a Database Specific Operation.")
                                                             
