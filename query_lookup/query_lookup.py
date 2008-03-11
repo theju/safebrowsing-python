@@ -1,7 +1,12 @@
 #!/usr/bin/python
 
 import re
-import sqlite3
+
+try:
+    import sqlite3 as sqlite
+except IOError:
+    from pysqlite2 import dbapi2 as sqlite
+
 try:
     from hashlib import md5
 except ImportError:
@@ -47,7 +52,7 @@ class Lookup(object):
         """
         self.url = url.lower()
         try:
-            conn = sqlite3.connect(self.dbname)
+            conn = sqlite.connect(self.dbname)
             cur = conn.cursor()
             # Break URL into components
             url_components = url_re.match(self.url).groups()
@@ -91,7 +96,7 @@ class Lookup(object):
             cur.close()
             conn.close()
             return             
-        except sqlite3.DatabaseError:
+        except sqlite.DatabaseError:
             raise Exception("Database Specific Error")
               
 
@@ -101,7 +106,7 @@ class Lookup(object):
         """
         self.md5 = md5
         try:
-            conn = sqlite3.connect(self.dbname)
+            conn = sqlite.connect(self.dbname)
             cur = conn.cursor()
             cur.execute("select * from url_hashes_table url_hash='%s';" %(self.md5))
             row = cur.fetchall()
@@ -118,7 +123,7 @@ class Lookup(object):
             cur.close()
             conn.close()
             return 
-        except sqlite3.DatabaseError:
+        except sqlite.DatabaseError:
             raise("Database Specific Error")
             
 
