@@ -1,7 +1,7 @@
-from django.newforms.fields import URLField
+from django.forms.fields import URLField
 from django.utils.translation import ugettext as _
 from django.core import validators
-from django.newforms.util import ValidationError
+from django.forms.util import ValidationError
 from django.conf import settings
 
 class Safe_URLField(URLField):
