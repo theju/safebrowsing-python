@@ -1,6 +1,5 @@
 from django.forms.fields import URLField
 from django.utils.translation import ugettext as _
-from django.core import validators
 from django.forms.util import ValidationError
 from django.conf import settings
 
@@ -12,7 +11,7 @@ class Safe_URLField(URLField):
 
     def __init__(self, max_length=None, min_length=None, badware_check=True, *args, **kwargs):
         self.badware_check = badware_check
-        super(Safe_URLField, self).__init__(validators.url_re, max_length, min_length, *args,**kwargs)
+        super(Safe_URLField, self).__init__(max_length, min_length, *args,**kwargs)
 
     def clean(self, value):
         import urllib2

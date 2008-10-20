@@ -9,10 +9,6 @@ class Safe_URLField(URLField):
         self.badware_check = badware_check
         super(Safe_URLField, self).__init__(**kwargs)
 
-
-    def get_manipulator_field_objs(self):
-        return [oldforms.URLField]
-
     def get_internal_type(self):
         return "CharField"
 
