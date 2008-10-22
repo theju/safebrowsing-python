@@ -1,9 +1,10 @@
 from django.db.models.fields import URLField
 import validators
-from django import oldforms
 
 class Safe_URLField(URLField):
     def __init__(self, badware_check=True, **kwargs):
+        # TODO: Wait till model-validation is checked in.
+        # Currently field validation doesn't work.
         if badware_check:
             kwargs.setdefault('validator_list', []).append(validators.isBadwareURL)
         self.badware_check = badware_check
