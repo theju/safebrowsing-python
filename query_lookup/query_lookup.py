@@ -4,7 +4,7 @@ import re
 
 try:
     import sqlite3 as sqlite
-except IOError:
+except ImportError:
     from pysqlite2 import dbapi2 as sqlite
 
 try:
