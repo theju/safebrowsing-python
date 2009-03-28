@@ -8,6 +8,7 @@ class Safe_URLField(URLField):
         if badware_check:
             kwargs.setdefault('validator_list', []).append(validators.isBadwareURL)
         self.badware_check = badware_check
+        kwargs['max_length'] = 2048
         super(Safe_URLField, self).__init__(**kwargs)
 
     def get_internal_type(self):
