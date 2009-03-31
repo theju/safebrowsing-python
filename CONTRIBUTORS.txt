@@ -10,3 +10,4 @@ Here is a list of much appreciated contributors who have
 helped improve safebrowsing-python.
 
     * Marcel Chastain
+    * Da-Chang Guan
