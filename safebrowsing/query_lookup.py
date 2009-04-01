@@ -6,7 +6,7 @@ try:
     from hashlib import md5
 except ImportError:
     # Python2.4 fallback
-    import md5
+    from md5 import md5
 
 url_re = re.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?")
 
@@ -87,13 +87,13 @@ class Lookup(object):
         return None           
               
 
-    def lookup_by_md5(self, md5):
+    def lookup_by_md5(self, md5_hash):
         """
         Lookup by MD5 hash.
         """
-        self.md5 = md5
+        self.md5_hash = md5_hash
         cursor = self.backend.connection.cursor()
-        cursor.execute("SELECT * FROM url_hashes_table url_hash='%s';" %(self.md5))
+        cursor.execute("SELECT * FROM url_hashes_table url_hash='%s';" %(self.md5_hash))
         row = cursor.fetchall()
         if not row:
             pass
