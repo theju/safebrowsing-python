@@ -11,3 +11,4 @@ helped improve safebrowsing-python.
 
     * Marcel Chastain
     * Da-Chang Guan
+    * Jose Nazario
