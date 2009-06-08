@@ -56,9 +56,9 @@ class PostgresqlDbObj(BaseDbObj):
         conn_string = ""
         if not self.db_name:
             raise Exception("Database name not specified.")
-        conn_string += "Dbname=%s" %self.db_name
+        conn_string += "dbname=%s" %self.db_name
         if self.db_user:
-            conn_string += "user=%s %s" %(self.db_user, conn_string)
+            conn_string += " user=%s %s" %(self.db_user, conn_string)
         if self.db_password:
             conn_string += " password='%s'" %self.db_password
         if self.db_host:
