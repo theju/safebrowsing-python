@@ -27,7 +27,8 @@ class Google_Blacklist(object):
         return URL
 
     def fetch_data(self):
-        cursor = self.backend.connection.cursor()
+        conn = self.backend.connection
+        cursor = conn.cursor()
         cursor.execute("select * from %s_version;" %(self.badware_type))
         row = cursor.fetchall()
         st = string.Template(self.url)
@@ -71,4 +72,5 @@ class Google_Blacklist(object):
                                "VALUES ('%s','%s');" %(self.badware_code, 
                                                        url_hash[1:].strip()))
         cursor.close()
+        conn.commit()
         return 0
