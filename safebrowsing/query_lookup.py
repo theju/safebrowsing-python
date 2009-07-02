@@ -79,10 +79,7 @@ class Lookup(object):
                 continue
             # If row is non-empty then the URL is in 
             # database and stop operation by returning 1
-            if row[0][0] == "M":
-                return "M"
-            else:
-                return "B"
+            return row[0][0]
         cursor.close()
         return None           
               
@@ -95,12 +92,7 @@ class Lookup(object):
         cursor = self.backend.connection.cursor()
         cursor.execute("SELECT * FROM url_hashes_table url_hash='%s';" %(self.md5_hash))
         row = cursor.fetchall()
-        if not row:
-            pass
-        if row[0][0] == "M":
-            return "M"
-        else:
-            return "B"                   
         cursor.close()
-        return None
-            
+        if not row:
+            return None
+        return row[0][0]
