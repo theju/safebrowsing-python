@@ -53,20 +53,26 @@ class Lookup(object):
         url_components = url_re.match(self.url).groups()
 
         # Prepare the lookup list as given in the main docstring.
-        self.lookup_list = []
+        self.lookup_list = set()
         hostname = url_components[3]
-        try:
-            hostname_5_comp = hostname.split(".")[-5:]
-        except AttributeError:
+        hostname_comp = hostname.split(".")
+        if not hostname_comp:
             raise AttributeError("Invalid URL.")
-        for i in xrange(5):
-            self.lookup_list.append(".".join(hostname_5_comp[i:])+"/")
-            if not url_components[4] == None:
-                self.lookup_list.append(".".join(hostname_5_comp[i:])+url_components[4])
-                if not url_components[5] == None:
-                    self.lookup_list.append(".".join(hostname_5_comp[i:])+''.join(url_components[4:6]))
-                    if not url_components[7] == None:
-                        self.lookup_list.append(".".join(hostname_5_comp[i:])+''.join(url_components[4:6])+url_components[7])
+
+        for i in xrange(len(hostname_comp) - 1):
+            filtered_hostname_comp = ".".join(hostname_comp[i:])
+            self.lookup_list.add(filtered_hostname_comp + "/")
+            if url_components[4]:
+                path = url_components[4].split('/')
+                for j in xrange(len(path) + 1):
+                    filtered_paths = '/'.join(path[:j])
+                    if not '.' in filtered_paths:
+                        self.lookup_list.add(filtered_hostname_comp + "%s/" %filtered_paths)
+                self.lookup_list.add(filtered_hostname_comp + url_components[4])
+                if url_components[5]:
+                    self.lookup_list.add(filtered_hostname_comp + ''.join(url_components[4:6]))
+                    if url_components[7]:
+                        self.lookup_list.add(filtered_hostname_comp + ''.join(url_components[4:6]) + url_components[7])
             
         # Prepare the MD5 hash list for lookups.
         md5_hash_list = []
