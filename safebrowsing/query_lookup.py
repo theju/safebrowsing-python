@@ -89,14 +89,14 @@ class Lookup(object):
         cursor.close()
         return None           
               
-
+    # A helper function. Currently unused
     def lookup_by_md5(self, md5_hash):
         """
         Lookup by MD5 hash.
         """
         self.md5_hash = md5_hash
         cursor = self.backend.connection.cursor()
-        cursor.execute("SELECT * FROM url_hashes_table url_hash='%s';" %(self.md5_hash))
+        cursor.execute("SELECT * FROM url_hashes_table WHERE url_hash='%s';" %(self.md5_hash))
         row = cursor.fetchall()
         cursor.close()
         if not row:
