@@ -10,6 +10,7 @@ Here is an alphabetically sorted list of much
 appreciated contributors who have helped 
 improve safebrowsing-python.
 
+    * Alexandre Dulaunoy
     * Da-Chang Guan
     * Jose Nazario
     * Marcel Chastain
