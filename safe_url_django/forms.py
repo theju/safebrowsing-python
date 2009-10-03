@@ -46,16 +46,16 @@ class Safe_URLField(URLField):
             return value
         if value and '://' not in value:
             value = u'http://%s' % value
+        lookup_site = getattr(settings, 'BADWARE_SITE', "http://thejaswi.info/projects/"
+                              "safe_browsing/badware_check/?badware_url=%s" %value)
+        req = urllib2.Request(lookup_site, None, {"User-Agent":settings.URL_VALIDATOR_USER_AGENT})
         try:
-	    req = urllib2.Request("http://thejaswi.info/badware_check/?"
-                                  "badware_url=%s" %(value), 
-                                  None, 
-                                  {"User-Agent":settings.URL_VALIDATOR_USER_AGENT})
             contents = urllib2.urlopen(req).read()
-            if not contents in self.default_error_messages.keys():
-                value = super(Safe_URLField, self).clean(value)
-		return value
-            else:
-                raise ValidationError(self.error_messages[contents])
         except urllib2.URLError,e:
-            return ValidationError(unicode(e))
+            raise ValidationError(unicode(e))
+            
+        if not contents in self.default_error_messages.keys():
+            value = super(Safe_URLField, self).clean(value)
+            return value
+        else:
+            raise ValidationError(self.error_messages[contents])
