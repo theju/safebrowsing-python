@@ -27,16 +27,13 @@ class Google_Blacklist(object):
         return URL
 
     def fetch_data(self):
-        conn = self.backend.connection
-        cursor = conn.cursor()
-        cursor.execute("select * from %s_version;" %(self.badware_type))
-        row = cursor.fetchall()
+        version = self.backend.get_version(self.badware_type)
         st = string.Template(self.url)
-        if not row:
+        if not version:
             # Start the version number from the beginning
             self.version_number = "1:-1"
         else:
-            self.version_number = row[0][0]
+            self.version_number = version
         self.final_url = st.safe_substitute(key = self.backend.api_key,
                                             badware_type = self.badware_type,
                                             version = self.version_number)
@@ -49,28 +46,17 @@ class Google_Blacklist(object):
             return 0
         for url_hash in self.url_hashes_data[1:-1]:
             if self.remove_row_regexp.match(url_hash):
-                cursor.execute("DELETE FROM url_hashes_table WHERE "
-                               "badware_type='%s' AND url_hash='%s';" %(self.badware_code, 
-                                                                        url_hash[1:].strip()))
+                self.backend.delete_row(self.badware_code, url_hash[1:].strip())
                 del self.url_hashes_data[self.url_hashes_data.index(url_hash)]
 
         version_number_rx = re.compile("\d\.\d+").search(self.url_hashes_data[0])
         new_version_number = ":".join(version_number_rx.group().split("."))
         if self.version_number == "1:-1":
             self.version_number = new_version_number
-            cursor.execute("INSERT INTO %s_version (version_number) "
-                           "VALUES ('%s');" %(self.badware_type, 
-                                              self.version_number))
+            self.backend.insert_version_row(self.badware_type, self.version_number)
         else:
-            cursor.execute("UPDATE %s_version SET version_number='%s' "
-                           "WHERE version_number='%s';" %(self.badware_type, 
-                                                          new_version_number, 
-                                                          self.version_number))
+            self.backend.update_version_row(self.badware_type, new_version_number, self.version_number)
         for url_hash in self.url_hashes_data[1:]:
             if not url_hash == '\n':
-                cursor.execute("INSERT INTO url_hashes_table (badware_type,url_hash) "
-                               "VALUES ('%s','%s');" %(self.badware_code, 
-                                                       url_hash[1:].strip()))
-        cursor.close()
-        conn.commit()
+                self.backend.insert_row(self.badware_code, url_hash[1:].strip())
         return 0
