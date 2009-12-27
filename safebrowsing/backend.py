@@ -18,8 +18,45 @@ class SqliteDbObj(BaseDbObj):
             from pysqlite2 import dbapi2 as sqlite
 
         self.connection = sqlite.connect(self.db_name)
+        self.cursor = self.connection.cursor()
 
-class MySqlDbObj(BaseDbObj):
+    def get_version(self, badware_type):
+        self.cursor.execute("select * from %s_version;" %(badware_type))
+        row = self.cursor.fetchall()
+        if not row:
+            return None
+        return row[0][0]
+
+    def insert_version_row(self, badware_type, version_number):
+        self.cursor.execute("INSERT INTO %s_version (version_number) VALUES "
+                            "('%s');" %(badware_type, version_number))        
+
+    def update_version_row(self, badware_type, new_version_number, version_number):
+        self.cursor.execute("UPDATE %s_version SET version_number='%s' WHERE "
+                            "version_number='%s';" %(badware_type, new_version_number, 
+                                                     version_number))
+
+    def insert_row(self, badware_code, url_hash):
+        self.cursor.execute("INSERT INTO url_hashes_table (badware_type,url_hash) "
+                            "VALUES ('%s','%s');" %(badware_code, url_hash))
+
+    def delete_row(self, badware_code, url_hash):
+        self.cursor.execute("DELETE FROM url_hashes_table WHERE badware_type='%s' "
+                            "AND url_hash='%s';" %(badware_code, url_hash))
+
+    def lookup_by_md5(self, md5_hash):
+        if isinstance(md5, (str, unicode)):
+            md5_hash = [md5_hash,]
+        for md5h in md5_hash:
+            self.cursor.execute("SELECT * FROM url_hashes_table WHERE url_hash='%s';" %(md5h))
+            row = self.cursor.fetchall()
+            if not row:
+                continue
+            # If row is non-empty then the URL is in 
+            # database and stop operation by returning 1
+            return row[0][0]
+
+class MySqlDbObj(SqliteDbObj):
     def __init__(self):
         try:
             import MySQLDb
@@ -41,9 +78,10 @@ class MySqlDbObj(BaseDbObj):
             kwargs['port'] = int(self.db_port)
 
         self.connection = MySQLDb.connect(**kwargs)
+        self.cursor = self.connection.cursor()
 
 
-class PostgresqlDbObj(BaseDbObj):
+class PostgresqlDbObj(SqliteDbObj):
     def __init__(self):
         try:
             import psycopg2 as Database
@@ -67,10 +105,49 @@ class PostgresqlDbObj(BaseDbObj):
             conn_string += " port=%s" % self.db_port
 
         self.connection = Database.connect(conn_string)
+        self.cursor = self.connection.cursor()
 
+class MemcachedDbObj(BaseDbObj):
+    def __init__(self):
+        try:
+            import memcache
+        except ImportError:
+            raise Exception("Could not find the memcached module.")
+        if isinstance(self.db_host, (str, unicode)):
+            self.db_host = [self.db_host,]
+        if isinstance(self.db_port, (int, str, unicode)):
+            self.db_port = [self.db_port, ]
+        servers = ["%s:%s" %(ii[0], ii[1]) for ii in zip(self.db_host, self.db_port)]
+        self.client = memcache.Client(servers)
 
-DB_BACKENDS = {'sqlite3': SqliteDbObj, 'mysql': MySqlDbObj, 
-               'postgresql': PostgresqlDbObj}
+    def get_version(self, badware_type):
+        return self.client.get("%s_version" %(badware_type))
+
+    def insert_version_row(self, badware_type, version_number):
+        self.client.set("%s_version" %badware_type, version_number)
+
+    def update_version_row(self, badware_type, new_version_number, version_number):
+        self.client.set("%s_version" %badware_type, version_number)
+
+    def insert_row(self, badware_code, url_hash):
+        self.client.set(url_hash, badware_code)
+
+    def delete_row(self, badware_code, url_hash):
+        self.client.delete(url_hash, badware_code)
+
+    def lookup_by_md5(self, md5_hash):
+        if isinstance(md5_hash, (str, unicode)):
+            md5_hash = [md5_hash,]
+        for md5h in md5_hash:
+            row = self.client.get(md5h)
+            if not row:
+                continue
+            return row
+
+DB_BACKENDS = {'sqlite3'     : SqliteDbObj, 
+               'mysql'       : MySqlDbObj, 
+               'postgresql'  : PostgresqlDbObj, 
+               'memcached'   : MemcachedDbObj,}
 
 
 class DbObj(object):
@@ -79,5 +156,3 @@ class DbObj(object):
         if not backend in DB_BACKENDS:
             raise Exception("The DATABASE_ENGINE is not among the supported backends.")
         self.backend = DB_BACKENDS[backend]()
-        
-
