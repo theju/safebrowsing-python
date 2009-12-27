@@ -47,7 +47,6 @@ class Lookup(object):
         Lookup Method by URL.
         """
         self.url = url.lower()
-        cursor = self.backend.connection.cursor()
         
         # Break URL into components
         url_components = url_re.match(self.url).groups()
@@ -78,27 +77,11 @@ class Lookup(object):
         md5_hash_list = []
         for url_comp in self.lookup_list:
             md5_hash_list.append(md5(url_comp).hexdigest())
-        for md5_hash in md5_hash_list:
-            cursor.execute("SELECT * FROM url_hashes_table WHERE url_hash='%s';" %(md5_hash))
-            row = cursor.fetchall()
-            if not row:
-                continue
-            # If row is non-empty then the URL is in 
-            # database and stop operation by returning 1
-            return row[0][0]
-        cursor.close()
-        return None           
+        return self.backend.lookup_by_md5(md5_hash_list)
               
     # A helper function. Currently unused
     def lookup_by_md5(self, md5_hash):
         """
         Lookup by MD5 hash.
         """
-        self.md5_hash = md5_hash
-        cursor = self.backend.connection.cursor()
-        cursor.execute("SELECT * FROM url_hashes_table WHERE url_hash='%s';" %(self.md5_hash))
-        row = cursor.fetchall()
-        cursor.close()
-        if not row:
-            return None
-        return row[0][0]
+        return self.backend.lookup_by_md5(md5_hash)
