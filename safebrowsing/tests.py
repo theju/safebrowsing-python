@@ -105,51 +105,55 @@ class SafebrowsingTestCase(unittest.TestCase):
                        'a.b.c.e.f.g/1.html?param=1',
                        'a.b.c.e.f.g/1.html',
                        'a.b.c.e.f.g/']
+=======
+>>>>>>> 1d1eb34... Changes to the tests to make them more readable
         self.assertEqual(self.lookup_obj.lookup_list, lookup_list)
 
     def testLookupList2(self):
-        self.lookup_obj.lookup_by_url('http://a.b.c.d.e.f.g/1/2.html?param=1#Tag')
-        lookup_list = ['f.g/1/2.html?param=1#Tag',
-                       'f.g/1/2.html?param=1',
-                       'f.g/1/2.html',
-                       'f.g/1/',
-                       'f.g/',
-                       'e.f.g/1/2.html?param=1#Tag',
-                       'e.f.g/1/2.html?param=1',
-                       'e.f.g/1/2.html',
-                       'e.f.g/1/',
-                       'e.f.g/',
-                       'd.e.f.g/1/2.html?param=1#Tag',
-                       'd.e.f.g/1/2.html?param=1',
-                       'd.e.f.g/1/2.html',
-                       'd.e.f.g/1/',
-                       'd.e.f.g/',
-                       'c.d.e.f.g/1/2.html?param=1#Tag',
-                       'c.d.e.f.g/1/2.html?param=1',
-                       'c.d.e.f.g/1/2.html',
-                       'c.d.e.f.g/1/',
-                       'c.d.e.f.g/',
-                       'b.c.d.e.f.g/1/2.html?param=1#Tag',
-                       'b.c.d.e.f.g/1/2.html?param=1',
-                       'b.c.d.e.f.g/1/2.html',
-                       'b.c.d.e.f.g/1/',
-                       'b.c.d.e.f.g/',
-                       'a.b.c.d.e.f.g/1/2.html?param=1#Tag',
-                       'a.b.c.d.e.f.g/1/2.html?param=1',
-                       'a.b.c.d.e.f.g/1/2.html',
-                       'a.b.c.d.e.f.g/1/',
-                       'a.b.c.d.e.f.g/',
-                       'a.b.c.d.e.f.g/1/2.html?param=1#Tag',
-                       'a.b.c.d.e.f.g/1/2.html?param=1',
-                       'a.b.c.d.e.f.g/1/2.html',
-                       'a.b.c.d.e.f.g/1/',
-                       'a.b.c.d.e.f.g/',
-                       'a.b.c.d.e.f.g/1/2.html?param=1#Tag',
-                       'a.b.c.d.e.f.g/1/2.html?param=1',
-                       'a.b.c.d.e.f.g/1/2.html',
-                       'a.b.c.d.e.f.g/1/',
-                       'a.b.c.d.e.f.g/',]
+        self.lookup_obj.lookup_by_url('http://a.b.c.d.e.f.g/1/2/3.html?param=1#Tag')
+        lookup_list = set(['a.b.c.d.e.f.g/',
+                           'a.b.c.d.e.f.g/1/',
+                           'a.b.c.d.e.f.g/1/2/',
+                           'a.b.c.d.e.f.g/1/2/3.html',
+                           'a.b.c.d.e.f.g/1/2/3.html?param=1',
+                           'a.b.c.d.e.f.g/1/2/3.html?param=1#tag',
+                           'b.c.d.e.f.g/',
+                           'b.c.d.e.f.g/1/',
+                           'b.c.d.e.f.g/1/2/',
+                           'b.c.d.e.f.g/1/2/3.html',
+                           'b.c.d.e.f.g/1/2/3.html?param=1',
+                           'b.c.d.e.f.g/1/2/3.html?param=1#tag',
+                           'c.d.e.f.g/',
+                           'c.d.e.f.g/1/',
+                           'c.d.e.f.g/1/2/',
+                           'c.d.e.f.g/1/2/3.html',
+                           'c.d.e.f.g/1/2/3.html?param=1',
+                           'c.d.e.f.g/1/2/3.html?param=1#tag',
+                           'd.e.f.g/',
+                           'd.e.f.g/1/',
+                           'd.e.f.g/1/2/',
+                           'd.e.f.g/1/2/3.html',
+                           'd.e.f.g/1/2/3.html?param=1',
+                           'd.e.f.g/1/2/3.html?param=1#tag',
+                           'e.f.g/',
+                           'e.f.g/1/',
+                           'e.f.g/1/2/',
+                           'e.f.g/1/2/3.html',
+                           'e.f.g/1/2/3.html?param=1',
+                           'e.f.g/1/2/3.html?param=1#tag',
+                           'f.g/',
+                           'f.g/1/',
+                           'f.g/1/2/',
+                           'f.g/1/2/3.html',
+                           'f.g/1/2/3.html?param=1',
+                           'f.g/1/2/3.html?param=1#tag',
+                           ])
         self.assertEqual(self.lookup_obj.lookup_list, lookup_list)
+
+    def testHashPresent1(self):
+        result = self.lookup_obj.lookup_by_url('http://malware.testing.google.test/testing/malware/')
+        self.assertEqual(result, u'M')
+
 
 if __name__ == '__main__':
     unittest.main()
