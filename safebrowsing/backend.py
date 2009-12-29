@@ -129,7 +129,10 @@ class MemcachedDbObj(BaseDbObj):
         self.client.delete_multi(url_hash_dict.keys())
 
     def lookup_by_md5(self, md5_hash_list):
-        return self.client.get_multi(md5_hash_list)
+        hash_row = self.client.get_multi(md5_hash_list)
+        if not hash_row:
+            return None
+        return hash_row.values()[0]
 
 DB_BACKENDS = {'sqlite3'     : SqliteDbObj, 
                'mysql'       : MySqlDbObj, 
