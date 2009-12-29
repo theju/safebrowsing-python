@@ -31,6 +31,8 @@ class SqliteDbObj(BaseDbObj):
         for (url_hash, badware_code) in url_hash_dict.items():
             self.cursor.execute("INSERT INTO url_hashes_table (badware_type,url_hash) "
                                 "VALUES ('%s','%s');" %(badware_code, url_hash))
+        self.connection.commit()
+        self.connection.close()
 
     def delete_rows(self, url_hash_dict):
         for (url_hash, badware_code) in url_hash_dict.items():
@@ -140,4 +142,3 @@ class DbObj(object):
         if not backend in DB_BACKENDS:
             raise Exception("The DATABASE_ENGINE is not among the supported backends.")
         self.backend = DB_BACKENDS[backend]()
-
