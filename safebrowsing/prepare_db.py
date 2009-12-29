@@ -50,7 +50,7 @@ class Google_Blacklist(object):
             else:
                 cleaned_url_hash = url_hash.strip()
                 if cleaned_url_hash and cleaned_url_hash != "\n":
-                    rows_to_insert.update({cleaned_url_hash: self.badware_code})
+                    rows_to_insert.update({cleaned_url_hash[1:]: self.badware_code})
         self.backend.delete_rows(rows_to_delete)
 
         version_number_rx = re.compile("\d\.\d+").search(self.url_hashes_data[0])
