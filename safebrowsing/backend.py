@@ -26,19 +26,19 @@ class SqliteDbObj(BaseDbObj):
                             "version_number='%s';" %(badware_type, new_version_number, 
                                                      version_number))
 
-    def insert_row(self, badware_code, url_hash):
-        self.cursor.execute("INSERT INTO url_hashes_table (badware_type,url_hash) "
-                            "VALUES ('%s','%s');" %(badware_code, url_hash))
+    def insert_rows(self, url_hash_dict):
+        for (url_hash, badware_code) in url_hash_dict.items():
+            self.cursor.execute("INSERT INTO url_hashes_table (badware_type,url_hash) "
+                                "VALUES ('%s','%s');" %(badware_code, url_hash))
 
-    def delete_row(self, badware_code, url_hash):
-        self.cursor.execute("DELETE FROM url_hashes_table WHERE badware_type='%s' "
-                            "AND url_hash='%s';" %(badware_code, url_hash))
+    def delete_rows(self, url_hash_dict):
+        for (url_hash, badware_code) in url_hash_dict.items():
+            self.cursor.execute("DELETE FROM url_hashes_table WHERE badware_type='%s' "
+                                "AND url_hash='%s';" %(badware_code, url_hash))
 
-    def lookup_by_md5(self, md5_hash):
-        if isinstance(md5, (str, unicode)):
-            md5_hash = [md5_hash,]
-        for md5h in md5_hash:
-            self.cursor.execute("SELECT * FROM url_hashes_table WHERE url_hash='%s';" %(md5h))
+    def lookup_by_md5(self, md5_hash_list):
+        for md5_hash in md5_hash_list:
+            self.cursor.execute("SELECT * FROM url_hashes_table WHERE url_hash='%s';" %(md5_hash))
             row = self.cursor.fetchall()
             if not row:
                 continue
@@ -119,20 +119,14 @@ class MemcachedDbObj(BaseDbObj):
     def update_version_row(self, badware_type, new_version_number, version_number):
         self.client.set("%s_version" %badware_type, version_number)
 
-    def insert_row(self, badware_code, url_hash):
-        self.client.set(url_hash, badware_code)
+    def insert_rows(self, url_hash_dict):
+        self.client.set_multi(url_hash_dict)
 
-    def delete_row(self, badware_code, url_hash):
-        self.client.delete(url_hash, badware_code)
+    def delete_rows(self, url_hash_dict):
+        self.client.delete_multi(url_hash_dict.keys())
 
-    def lookup_by_md5(self, md5_hash):
-        if isinstance(md5_hash, (str, unicode)):
-            md5_hash = [md5_hash,]
-        for md5h in md5_hash:
-            row = self.client.get(md5h)
-            if not row:
-                continue
-            return row
+    def lookup_by_md5(self, md5_hash_list):
+        return self.client.get_multi(md5_hash_list)
 
 DB_BACKENDS = {'sqlite3'     : SqliteDbObj, 
                'mysql'       : MySqlDbObj, 
