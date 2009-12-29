@@ -22,11 +22,11 @@ class BaseDbObj(object):
         """To be subclassed by backends"""
         return NotImplementedError
 
-    def insert_row(self, badware_code, url_hash):
+    def insert_rows(self, badware_code, url_hash_list):
         """To be subclassed by backends"""
         return NotImplementedError
 
-    def delete_row(self, badware_code, url_hash):
+    def delete_rows(self, badware_code, url_hash_list):
         """To be subclassed by backends"""
         return NotImplementedError
 
