@@ -1,3 +1,4 @@
+import conf
 from base import BaseDbObj
 
 class SqliteDbObj(BaseDbObj):
