@@ -79,6 +79,10 @@ class SafebrowsingTestCase(unittest.TestCase):
         result = self.lookup_obj.lookup_by_url('http://malware.testing.google.test/testing/malware/')
         self.assertEqual(result, u'M')
 
+    def testHashNotPresent1(self):
+        result = self.lookup_obj.lookup_by_url('http://google.com/')
+        self.assertEqual(result, None)
+
 
 if __name__ == '__main__':
     unittest.main()
