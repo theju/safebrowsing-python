@@ -1,14 +1,4 @@
-from platform import node
-import conf
-
-class BaseDbObj(object):
-    db_engine   = getattr(conf, 'DATABASE_ENGINE')
-    db_name     = getattr(conf, 'DATABASE_NAME')
-    db_user     = getattr(conf, 'DATABASE_USER')
-    db_password = getattr(conf, 'DATABASE_PASSWORD')
-    db_host     = getattr(conf, 'DATABASE_HOST', node())
-    db_port     = getattr(conf, 'DATABASE_PORT')
-    api_key     = getattr(conf, 'API_KEY')
+from base import BaseDbObj
 
 class SqliteDbObj(BaseDbObj):
     def __init__(self):
@@ -149,10 +139,10 @@ DB_BACKENDS = {'sqlite3'     : SqliteDbObj,
                'postgresql'  : PostgresqlDbObj, 
                'memcached'   : MemcachedDbObj,}
 
-
 class DbObj(object):
     def __init__(self):
         backend = getattr(conf, 'DATABASE_ENGINE')
         if not backend in DB_BACKENDS:
             raise Exception("The DATABASE_ENGINE is not among the supported backends.")
         self.backend = DB_BACKENDS[backend]()
+
