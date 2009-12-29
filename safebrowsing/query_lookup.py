@@ -84,4 +84,4 @@ class Lookup(object):
         """
         Lookup by MD5 hash.
         """
-        return self.backend.lookup_by_md5(md5_hash)
+        return self.backend.lookup_by_md5([md5_hash, ])
