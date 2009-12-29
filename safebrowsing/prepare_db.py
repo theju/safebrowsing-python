@@ -1,6 +1,4 @@
-import re
-import urllib2
-import string
+import re, urllib2, string
 from backend import DbObj
 
 URL="http://sb.google.com/safebrowsing/update?client=api&apikey=${key}&version=goog-${badware_type}-hash:${version}"
@@ -44,10 +42,16 @@ class Google_Blacklist(object):
             # number. This case might be because of
             # throttling or no updates available.
             return 0
+        rows_to_delete = {}
+        rows_to_insert = {}
         for url_hash in self.url_hashes_data[1:-1]:
             if self.remove_row_regexp.match(url_hash):
-                self.backend.delete_row(self.badware_code, url_hash[1:].strip())
-                del self.url_hashes_data[self.url_hashes_data.index(url_hash)]
+                rows_to_delete.update({url_hash.strip(): self.badware_code})
+            else:
+                cleaned_url_hash = url_hash.strip()
+                if cleaned_url_hash and cleaned_url_hash != "\n":
+                    rows_to_insert.update({cleaned_url_hash: self.badware_code})
+        self.backend.delete_rows(rows_to_delete)
 
         version_number_rx = re.compile("\d\.\d+").search(self.url_hashes_data[0])
         new_version_number = ":".join(version_number_rx.group().split("."))
@@ -56,7 +60,5 @@ class Google_Blacklist(object):
             self.backend.insert_version_row(self.badware_type, self.version_number)
         else:
             self.backend.update_version_row(self.badware_type, new_version_number, self.version_number)
-        for url_hash in self.url_hashes_data[1:]:
-            if not url_hash == '\n':
-                self.backend.insert_row(self.badware_code, url_hash[1:].strip())
+        self.backend.insert_rows(rows_to_insert)
         return 0
